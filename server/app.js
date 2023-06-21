@@ -2,8 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const LedRouter = require('./routes/LedRoutes');
+const SensorRoutes = require('./routes/SensorRoutes')
+require('dotenv').config()
 
 app.use(cors());
+
+app.use('./sensor',SensorRoutes);
 
 app.use('/led',LedRouter);
 
