@@ -12,7 +12,7 @@ unsigned long timeDelayLed = 10;
 
 //sensor ultrasonico
 unsigned long lastTimeSensor = 0;
-unsigned long timerDelaySnsor = 50;
+unsigned long timerDelaySensor = 50;
 
 const int trigPin = D6;
 const int echoPin = D5;
@@ -67,7 +67,7 @@ void loop() {
   client.setInsecure(); // desativando o ssl
   //se o tempo atual(millis) menos a última marcação(lastTime) for menos que o tempo escolhido
   //eu faço a tarefa e reinicio a marcação passando o tempo atual
-  if((millis() - lastTimeLed > timerDelayLed)){
+  if((millis() - lastTimeLed > timeDelayLed)){
     //faço algo
       http.begin(client,"https://iot-turma-quarta-feira.onrender.com/led/state-led");
       int httpCode = http.GET();
@@ -87,5 +87,29 @@ void loop() {
       
     lastTimeLed = millis();
     }
-  
+    //lendo o sinal
+    digitalWrite(trigPin,LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin,HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin,LOW);
+
+    duration = pulseIn(echoPin,HIGH);
+    distanceCm = duration * SOUND_VELOCITY/2;
+
+    if((millis() - lastTimeSensor > timerDelaySensor)) {
+      http.begin(client,"https://iot-turma-quarta-feira.onrender.com/sensor/acesso");
+      http.addHeader("Content-Type","application/json");
+      StaticJsonDocument<100> SensorDocument;
+      SensorDocument["nome"] = "porta de entrada";
+      SensorDocument["value"] = distanceCm;
+      if(distanceCm < 150 and distanceCm > 50){
+        char bufferdoJsonEmString[100];
+        serializeJson(SensorDocument, bufferdoJsonEmString);
+        int httpResponseCode = http.POST(bufferdoJsonEmString);
+        String ResponseServer = http.getString();
+        Serial.println(ResponseServer);
+        }
+        lastTimeSensor = millis();
+      }
 }
